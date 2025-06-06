@@ -277,7 +277,7 @@ const CallQueue = () => {
             <span>Quick Call Script</span>
           </h4>
           <p className="text-sm text-accent-600">
-            "Hello [Name], this is [Your Name] from [Company]. You responded to our email about listing your {lead.propertyType} in {lead.location}. 
+            "Hello [Name], this is [Your Name] from [Company]. You responded to our email about listing your [Property Type] in [Location]. 
             I understand you're interested in our commission structure - I have 5 minutes to explain how we can help you sell faster..."
           </p>
         </div>
