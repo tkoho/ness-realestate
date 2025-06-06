@@ -248,7 +248,7 @@ const Header = () => {
               onClick={toggleLanguage}
               className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-secondary-50 nav-transition"
             >
-              <Icon name="Globe" size={16} />
+              <Icon name="Globe" size={18} />
               <span>Language: {currentLanguage}</span>
             </button>
           </nav>
