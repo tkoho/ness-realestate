@@ -1,22 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
+import ApiService from '../../../services/api';
 
 const CallQueue = () => {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState('score');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [priorityLeads, setPriorityLeads] = useState([]);
 
-  // Empty state - no mock data
-  const priorityLeads = [];
+  useEffect(() => {
+    loadCallQueue();
+  }, []);
+
+  const loadCallQueue = async () => {
+    setIsLoading(true);
+    try {
+      const leads = await ApiService.getCallQueue();
+      setPriorityLeads(leads);
+    } catch (error) {
+      console.error('Failed to load call queue:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    loadCallQueue();
   };
 
   const renderEmptyState = () => (
@@ -109,13 +120,89 @@ const CallQueue = () => {
 
   const sortedLeads = [...priorityLeads].sort((a, b) => {
     if (sortBy === 'score') return b.score - a.score;
-    if (sortBy === 'value') return b.propertyValue - a.propertyValue;
+    if (sortBy === 'value') return b.property_value - a.property_value;
     if (sortBy === 'urgency') {
       const urgencyOrder = { urgent: 3, high: 2, medium: 1 };
       return urgencyOrder[b.urgency] - urgencyOrder[a.urgency];
     }
     return 0;
   });
+
+  const renderLeadsList = () => (
+    <div className="space-y-4">
+      {sortedLeads.map((lead) => (
+        <div key={lead.id} className="bg-white rounded-lg border border-border p-4 hover:shadow-elevated nav-transition">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Image 
+                  src={lead.property_image}
+                  alt="Property"
+                  className="w-12 h-12 rounded-lg object-cover"
+                />
+                <div className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs ${getUrgencyColor(lead.urgency)}`}>
+                  {getUrgencyIcon(lead.urgency)}
+                </div>
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center space-x-2">
+                  <h3 className="font-medium text-text-primary">{lead.owner_name}</h3>
+                  <span className="text-xs text-text-secondary">({lead.owner_name_en})</span>
+                </div>
+                <div className="flex items-center space-x-4 text-sm text-text-secondary mt-1">
+                  <span className="flex items-center space-x-1">
+                    <Icon name="MapPin" size={12} />
+                    <span>{lead.location}</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <Icon name="Home" size={12} />
+                    <span>{lead.property_type}</span>
+                  </span>
+                  <span className="flex items-center space-x-1">
+                    <Icon name="Clock" size={12} />
+                    <span>{lead.response_time}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-sm font-semibold text-text-primary">Score: {lead.score}</div>
+                <div className="text-xs text-text-secondary">{formatCurrency(lead.property_value)}</div>
+                <div className="text-xs text-success">{formatCommission(lead.commission)} commission</div>
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <button
+                  onClick={() => handleCallLead(lead)}
+                  className="px-3 py-1 bg-success text-white rounded-md hover:bg-success-600 text-sm nav-transition flex items-center space-x-1"
+                >
+                  <Icon name="Phone" size={14} />
+                  <span>Call</span>
+                </button>
+                <button
+                  onClick={() => handleViewDetails(lead)}
+                  className="px-3 py-1 bg-secondary text-white rounded-md hover:bg-secondary-600 text-sm nav-transition"
+                >
+                  Details
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-3 pt-3 border-t border-border">
+            <div className="flex items-center justify-between text-xs text-text-secondary">
+              <span>Stage: {lead.automation_stage}</span>
+              <span>Best time: {lead.best_call_time}</span>
+              <span>Last: {lead.last_response}</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="bg-surface rounded-lg border border-border">
@@ -160,7 +247,7 @@ const CallQueue = () => {
       </div>
       
       <div className="p-6">
-        {isLoading ? renderLoadingState() : priorityLeads.length === 0 ? renderEmptyState() : null}
+        {isLoading ? renderLoadingState() : priorityLeads.length === 0 ? renderEmptyState() : renderLeadsList()}
       </div>
     </div>
   );
