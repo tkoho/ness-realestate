@@ -9,6 +9,7 @@ import FunnelPerformance from './components/FunnelPerformance';
 
 const AutomationControlCenter = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -18,58 +19,58 @@ const AutomationControlCenter = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Updated metrics for automation focus
+  // Empty state - no mock data
   const automationMetrics = [
     {
       id: 1,
       title: "Ready for Calls",
-      value: "8",
-      change: "High Priority",
-      changeType: "urgent",
+      value: "0",
+      change: "No Priority Leads",
+      changeType: "neutral",
       icon: "Phone",
-      color: "error",
+      color: "secondary",
       description: "Leads ready for your closing call",
-      urgent: true
+      urgent: false
     },
     {
       id: 2,
       title: "Auto-Contacted Today",
-      value: "31",
-      change: "100% success",
+      value: "0",
+      change: "System ready",
       changeType: "neutral",
       icon: "MessageCircle",
-      color: "primary",
+      color: "secondary",
       description: "New leads entered automation"
     },
     {
       id: 3,
       title: "Email Sequence Active",
-      value: "156",
-      change: "12% response rate",
-      changeType: "increase",
+      value: "0",
+      change: "No active sequences",
+      changeType: "neutral",
       icon: "Mail",
-      color: "accent",
+      color: "secondary",
       description: "Leads in automated follow-up"
     },
     {
       id: 4,
       title: "Contracts This Month",
-      value: "12",
-      change: "25% close rate",
-      changeType: "increase",
+      value: "0",
+      change: "Getting started",
+      changeType: "neutral",
       icon: "FileText",
-      color: "success",
+      color: "secondary",
       description: "Signed from your calls"
     }
   ];
 
   const automationHealth = {
-    status: "healthy",
-    percentage: 98,
-    nextScrape: "6:00 AM",
-    lastRun: "5 minutes ago",
-    dailyTarget: 50,
-    todayCount: 31
+    status: "ready",
+    percentage: 0,
+    nextScrape: "Not scheduled",
+    lastRun: "Never",
+    dailyTarget: 0,
+    todayCount: 0
   };
 
   const formatTime = (date) => {
@@ -80,33 +81,60 @@ const AutomationControlCenter = () => {
     });
   };
 
-  const formatDate = (date) => {
-    return date.toLocaleDateString('th-TH', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+  const getChangeColor = (changeType) => {
+    switch (changeType) {
+      case 'increase':
+        return 'text-success';
+      case 'decrease':
+        return 'text-error';
+      case 'urgent':
+        return 'text-error animate-pulse';
+      case 'neutral':
+      default:
+        return 'text-text-secondary';
+    }
   };
 
-  const getMetricColorClasses = (color) => {
-    const colorMap = {
-      primary: 'bg-primary-50 text-primary border-primary-100',
-      accent: 'bg-accent-50 text-accent border-accent-100',
-      success: 'bg-success-50 text-success border-success-100',
-      error: 'bg-error-50 text-error border-error-100'
-    };
-    return colorMap[color] || colorMap.primary;
+  const getHealthStatusColor = (status) => {
+    switch (status) {
+      case 'healthy':
+        return 'text-success bg-success-50 border-success-200';
+      case 'warning':
+        return 'text-warning bg-warning-50 border-warning-200';
+      case 'error':
+        return 'text-error bg-error-50 border-error-200';
+      case 'ready':
+      default:
+        return 'text-secondary bg-secondary-50 border-secondary-200';
+    }
   };
 
-  const getChangeColorClasses = (changeType) => {
-    const changeMap = {
-      increase: 'text-success-600 bg-success-50',
-      decrease: 'text-error-600 bg-error-50',
-      neutral: 'text-secondary-600 bg-secondary-50',
-      urgent: 'text-error-600 bg-error-50 animate-pulse'
-    };
-    return changeMap[changeType] || changeMap.neutral;
+  const handleRefresh = () => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
   };
+
+  const renderMetricsLoading = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, index) => (
+        <div key={index} className="animate-pulse">
+          <div className="bg-surface rounded-lg border border-border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-secondary-200 rounded-lg"></div>
+              <div className="w-16 h-4 bg-secondary-200 rounded"></div>
+            </div>
+            <div className="space-y-2">
+              <div className="w-12 h-8 bg-secondary-200 rounded"></div>
+              <div className="w-24 h-3 bg-secondary-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,93 +152,153 @@ const AutomationControlCenter = () => {
                 <span>Automation Control Center</span>
               </h1>
               <p className="text-text-secondary">
-                Monitor automated lead generation and prioritize your closing calls
+                Monitor your lead automation and track ready-to-close opportunities
               </p>
             </div>
             
             <div className="mt-4 sm:mt-0 flex items-center space-x-4">
               <div className="text-right">
-                <div className="text-sm text-text-secondary">Current Time</div>
-                <div className="text-lg font-semibold text-text-primary">
-                  {formatTime(currentTime)} | {formatDate(currentTime)}
+                <div className="text-sm text-text-secondary">System Status</div>
+                <div className={`text-lg font-semibold ${getHealthStatusColor(automationHealth.status).split(' ')[0]}`}>
+                  {automationHealth.status === 'ready' ? 'Ready to Start' : 'Running'}
                 </div>
               </div>
               <div className={`w-3 h-3 rounded-full ${
-                automationHealth.status === 'healthy' ? 'bg-success animate-pulse' : 'bg-error'
+                automationHealth.status === 'healthy' ? 'bg-success animate-pulse' :
+                automationHealth.status === 'warning' ? 'bg-warning animate-pulse' :
+                automationHealth.status === 'error' ? 'bg-error animate-pulse' :
+                'bg-secondary-300'
               }`}></div>
             </div>
           </div>
 
+          {/* Automation Metrics */}
+          <div className="mb-8">
+            {isLoading ? renderMetricsLoading() : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {automationMetrics.map((metric) => (
+                  <div
+                    key={metric.id}
+                    className={`
+                      bg-surface rounded-lg border border-border p-6 nav-transition
+                      ${metric.urgent ? 'ring-2 ring-error-200 bg-gradient-to-br from-white to-error-50' : 'hover:shadow-elevated'}
+                    `}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-12 h-12 bg-${metric.color}-50 rounded-lg flex items-center justify-center`}>
+                        <Icon name={metric.icon} size={24} color={`var(--color-${metric.color})`} />
+                      </div>
+                      <span className={`text-xs font-medium ${getChangeColor(metric.changeType)} px-2 py-1 rounded-full bg-opacity-20`}>
+                        {metric.change}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className={`text-2xl font-bold text-${metric.color}`}>
+                        {metric.value}
+                      </div>
+                      <h3 className="font-medium text-text-primary text-sm">
+                        {metric.title}
+                      </h3>
+                      <p className="text-xs text-text-secondary">
+                        {metric.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Automation Health Status */}
-          <div className="mb-6 p-4 bg-primary-50 border border-primary-100 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Icon name="Activity" size={20} className="text-primary" />
-                <div>
-                  <h3 className="font-semibold text-primary">Automation Status: Running</h3>
-                  <p className="text-sm text-primary-600">
-                    Next scrape: {automationHealth.nextScrape} • Last run: {automationHealth.lastRun}
-                  </p>
+          <div className="mb-8">
+            <div className="bg-surface rounded-lg border border-border p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-text-primary flex items-center space-x-2">
+                  <Icon name="Activity" size={20} />
+                  <span>Automation Health</span>
+                </h2>
+                <button
+                  onClick={handleRefresh}
+                  disabled={isLoading}
+                  className={`
+                    w-8 h-8 rounded-lg border border-border flex items-center justify-center nav-transition
+                    ${isLoading 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:bg-secondary-50 hover:border-secondary-300'
+                    }
+                  `}
+                >
+                  <Icon 
+                    name="RefreshCw" 
+                    size={16} 
+                    className={`text-text-secondary ${isLoading ? 'animate-spin' : ''}`} 
+                  />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className={`text-2xl font-bold ${getHealthStatusColor(automationHealth.status).split(' ')[0]}`}>
+                    {automationHealth.percentage}%
+                  </div>
+                  <div className="text-sm text-text-secondary">System Health</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-text-primary">
+                    {automationHealth.nextScrape}
+                  </div>
+                  <div className="text-sm text-text-secondary">Next Discovery</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-text-primary">
+                    {automationHealth.lastRun}
+                  </div>
+                  <div className="text-sm text-text-secondary">Last Run</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-text-primary">
+                    {automationHealth.todayCount}/{automationHealth.dailyTarget}
+                  </div>
+                  <div className="text-sm text-text-secondary">Today's Progress</div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">{automationHealth.todayCount}/{automationHealth.dailyTarget}</div>
-                <div className="text-sm text-primary-600">Today's discoveries</div>
+
+              {/* Progress Bar */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-text-primary">Daily Target Progress</span>
+                  <span className="text-sm text-text-secondary">
+                    {automationHealth.dailyTarget > 0 ? Math.round((automationHealth.todayCount / automationHealth.dailyTarget) * 100) : 0}%
+                  </span>
+                </div>
+                <div className="w-full bg-secondary-100 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      automationHealth.status === 'healthy' ? 'bg-success' :
+                      automationHealth.status === 'warning' ? 'bg-warning' :
+                      automationHealth.status === 'error' ? 'bg-error' : 'bg-secondary-300'
+                    }`}
+                    style={{ 
+                      width: automationHealth.dailyTarget > 0 
+                        ? `${Math.min((automationHealth.todayCount / automationHealth.dailyTarget) * 100, 100)}%` 
+                        : '0%' 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* System Status Info */}
+              <div className="mt-4 p-3 bg-secondary-50 rounded-lg">
+                <div className="text-sm text-text-secondary">
+                  {automationHealth.status === 'ready' ? (
+                    "🚀 System is ready. Configure your first automation sequence to begin lead discovery and nurturing."
+                  ) : (
+                    `⚡ Automation sequences are ${automationHealth.status}. Last updated: ${formatTime(currentTime)}`
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Priority Alert */}
-          <div className="mb-6 p-4 bg-error-50 border-l-4 border-l-error rounded-lg">
-            <div className="flex items-center space-x-3">
-              <Icon name="AlertTriangle" size={20} className="text-error" />
-              <div>
-                <h3 className="font-semibold text-error">🔥 8 HIGH-PRIORITY LEADS READY FOR YOUR CALLS</h3>
-                <p className="text-sm text-error-600">
-                  These leads have responded positively to automation - call now for best results
-                </p>
-              </div>
-              <button className="ml-auto px-4 py-2 bg-error text-white rounded-lg font-medium hover:bg-error-600 nav-transition">
-                View Call Queue
-              </button>
-            </div>
-          </div>
-
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {automationMetrics.map((metric) => (
-              <div
-                key={metric.id}
-                className={`bg-surface rounded-lg border p-6 hover:shadow-elevated nav-transition ${
-                  metric.urgent ? 'ring-2 ring-error-200 shadow-lg' : 'border-border'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getMetricColorClasses(metric.color)}`}>
-                    <Icon name={metric.icon} size={24} />
-                    {metric.urgent && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-error rounded-full animate-ping"></div>
-                    )}
-                  </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${getChangeColorClasses(metric.changeType)}`}>
-                    {metric.change}
-                  </div>
-                </div>
-                
-                <div className="mb-2">
-                  <h3 className="text-sm font-medium text-text-secondary mb-1">
-                    {metric.title}
-                  </h3>
-                  <div className="text-2xl font-bold text-text-primary">
-                    {metric.value}
-                  </div>
-                </div>
-                
-                <p className="text-xs text-text-secondary">
-                  {metric.description}
-                </p>
-              </div>
-            ))}
           </div>
 
           {/* Main Content Grid */}

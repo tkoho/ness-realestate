@@ -23,7 +23,7 @@ const Header = () => {
       path: '/call-queue', 
       icon: 'Phone',
       tooltip: 'Leads ready for your closing calls',
-      urgent: true // This will show a notification badge
+      urgent: false // No mock data, so no urgency
     },
     { 
       label: 'Automation', 
@@ -52,12 +52,19 @@ const Header = () => {
     { label: 'Logout', icon: 'LogOut', action: () => navigate('/login') }
   ];
 
-  // Mock notification counts for urgent items
+  // Empty state - no mock data
   const notifications = {
-    '/call-queue': 8, // 8 leads ready for calls
+    '/call-queue': 0, // No leads ready for calls
     '/automation-control': 0,
-    '/message-automation': 2, // 2 automation issues
-    '/contracts': 3 // 3 pending contracts
+    '/message-automation': 0, // No automation issues
+    '/contracts': 0 // No pending contracts
+  };
+
+  // Automation status
+  const automationStatus = {
+    isRunning: false,
+    hasIssues: false,
+    isConfigured: false
   };
 
   useEffect(() => {
@@ -68,192 +75,206 @@ const Header = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
-  const handleNavigation = (path) => {
-    navigate(path);
-    setIsMobileMenuOpen(false);
-  };
-
-  const toggleLanguage = () => {
-    setCurrentLanguage(prev => prev === 'EN' ? 'TH' : 'EN');
-  };
-
   const isActivePath = (path) => {
-    // Handle dynamic routes
-    if (path === '/call-queue' && location.pathname.startsWith('/lead-details')) {
-      return true;
-    }
-    if (path === '/automation-control' && location.pathname === '/') {
-      return true;
+    if (path === '/automation-control') {
+      return location.pathname === '/' || location.pathname === '/automation-control';
     }
     return location.pathname === path;
   };
 
-  return (
-    <header className="fixed top-0 left-0 right-0 bg-surface border-b border-border z-1000">
-      <div className="h-16 px-4 lg:px-6 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg relative">
-            <Icon name="Zap" size={20} color="white" />
-            {/* Automation status indicator */}
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full animate-pulse"></div>
-          </div>
-          <div className="hidden sm:block">
-            <h1 className="text-lg font-semibold text-text-primary">LeadGen Pro</h1>
-            <p className="text-xs text-text-secondary">Automated Real Estate Intelligence</p>
-          </div>
-        </div>
+  const getItemClasses = (item) => {
+    const baseClasses = "relative flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium nav-transition";
+    const isActive = isActivePath(item.path);
+    
+    if (isActive) {
+      return `${baseClasses} bg-primary text-white shadow-soft`;
+    }
+    
+    if (item.urgent && notifications[item.path] > 0) {
+      return `${baseClasses} text-error bg-error-50 hover:bg-error-100 border border-error-200`;
+    }
+    
+    return `${baseClasses} text-text-secondary hover:text-text-primary hover:bg-secondary-50`;
+  };
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-1">
-          {navigationItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => handleNavigation(item.path)}
-              className={`
-                flex items-center space-x-2 px-6 py-3 rounded-lg font-medium text-sm
-                nav-transition relative group
-                ${isActivePath(item.path)
-                  ? 'bg-primary-50 text-primary border border-primary-100' 
-                  : 'text-text-secondary hover:text-text-primary hover:bg-secondary-50'
-                }
-                ${item.urgent && notifications[item.path] > 0 ? 'animate-pulse' : ''}
-              `}
-              title={item.tooltip}
-            >
-              <Icon name={item.icon} size={18} />
-              <span>{item.label}</span>
-              
-              {/* Notification Badge */}
-              {notifications[item.path] > 0 && (
-                <span className={`
-                  absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white
-                  ${item.urgent ? 'bg-error animate-pulse' : 'bg-warning'}
-                `}>
-                  {notifications[item.path]}
-                </span>
-              )}
-              
-              {isActivePath(item.path) && (
-                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full"></div>
-              )}
-            </button>
-          ))}
-        </nav>
-
-        {/* Right Section */}
-        <div className="flex items-center space-x-4">
-          {/* Automation Health Indicator */}
-          <div className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-lg bg-success-50 text-success-600">
-            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium">Auto: ON</span>
-          </div>
-
-          {/* Language Toggle */}
-          <button
-            onClick={toggleLanguage}
-            className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-secondary-50 nav-transition"
-          >
-            <Icon name="Globe" size={16} />
-            <span>{currentLanguage}</span>
-          </button>
-
-          {/* Profile Dropdown */}
-          <div className="relative" ref={profileRef}>
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-secondary-50 nav-transition"
-            >
-              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                <Icon name="User" size={16} color="#1E40AF" />
-              </div>
-              <Icon 
-                name="ChevronDown" 
-                size={16} 
-                className={`text-text-secondary transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`}
-              />
-            </button>
-
-            {isProfileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-surface rounded-lg shadow-elevated border border-border py-2 z-1010">
-                {profileMenuItems.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      item.action();
-                      setIsProfileOpen(false);
-                    }}
-                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 nav-transition"
-                  >
-                    <Icon name={item.icon} size={16} />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-secondary-50 nav-transition relative"
-          >
-            <Icon name={isMobileMenuOpen ? "X" : "Menu"} size={20} />
-            {/* Mobile notification indicator */}
-            {Object.values(notifications).some(count => count > 0) && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-error rounded-full animate-ping"></div>
-            )}
-          </button>
-        </div>
+  const renderNotificationBadge = (item) => {
+    const count = notifications[item.path];
+    
+    if (count === 0) return null;
+    
+    return (
+      <div className={`
+        absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-xs font-bold
+        ${item.urgent ? 'bg-error text-white animate-pulse' : 'bg-warning text-white'}
+      `}>
+        {count > 99 ? '99+' : count}
       </div>
+    );
+  };
 
-      {/* Mobile Navigation */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-surface border-t border-border z-1020">
-          <nav className="px-4 py-4 space-y-2">
-            {navigationItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => handleNavigation(item.path)}
-                className={`
-                  w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium
-                  nav-transition
-                  ${isActivePath(item.path)
-                    ? 'bg-primary-50 text-primary border border-primary-100' 
-                    : 'text-text-secondary hover:text-text-primary hover:bg-secondary-50'
-                  }
-                `}
-              >
-                <div className="flex items-center space-x-3">
-                  <Icon name={item.icon} size={18} />
-                  <span>{item.label}</span>
-                </div>
-                
-                {notifications[item.path] > 0 && (
-                  <span className={`
-                    w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center text-white
-                    ${item.urgent ? 'bg-error' : 'bg-warning'}
-                  `}>
-                    {notifications[item.path]}
-                  </span>
-                )}
-              </button>
-            ))}
-            
-            {/* Mobile Language Toggle */}
-            <button
-              onClick={toggleLanguage}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-secondary-50 nav-transition"
-            >
-              <Icon name="Globe" size={16} />
-              <span>Language: {currentLanguage}</span>
-            </button>
-          </nav>
+  const renderAutomationStatusIndicator = () => {
+    if (!automationStatus.isConfigured) {
+      return (
+        <div className="flex items-center space-x-2 px-3 py-1.5 bg-secondary-50 rounded-lg border border-secondary-200">
+          <div className="w-2 h-2 bg-secondary-300 rounded-full"></div>
+          <span className="text-xs text-text-secondary">Ready to Configure</span>
         </div>
-      )}
+      );
+    }
+
+    if (automationStatus.hasIssues) {
+      return (
+        <div className="flex items-center space-x-2 px-3 py-1.5 bg-warning-50 rounded-lg border border-warning-200">
+          <div className="w-2 h-2 bg-warning rounded-full animate-pulse"></div>
+          <span className="text-xs text-warning-700">Issues Detected</span>
+        </div>
+      );
+    }
+
+    if (automationStatus.isRunning) {
+      return (
+        <div className="flex items-center space-x-2 px-3 py-1.5 bg-success-50 rounded-lg border border-success-200">
+          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+          <span className="text-xs text-success-700">Running</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center space-x-2 px-3 py-1.5 bg-primary-50 rounded-lg border border-primary-200">
+        <div className="w-2 h-2 bg-primary rounded-full"></div>
+        <span className="text-xs text-primary-700">Configured</span>
+      </div>
+    );
+  };
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-surface border-b border-border shadow-soft">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center space-x-4">
+            <div 
+              onClick={() => navigate('/automation-control')}
+              className="flex items-center space-x-3 cursor-pointer"
+            >
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Icon name="Zap" size={18} color="white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-text-primary">LeadGen Pro</h1>
+                <div className="text-xs text-text-secondary">Automation Platform</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-1">
+            {navigationItems.map((item) => (
+              <div key={item.path} className="relative">
+                <button
+                  onClick={() => navigate(item.path)}
+                  className={getItemClasses(item)}
+                  title={item.tooltip}
+                >
+                  <Icon name={item.icon} size={16} />
+                  <span>{item.label}</span>
+                  {renderNotificationBadge(item)}
+                </button>
+              </div>
+            ))}
+          </nav>
+
+          {/* Right Side Controls */}
+          <div className="flex items-center space-x-4">
+            {/* Automation Status */}
+            <div className="hidden md:block">
+              {renderAutomationStatusIndicator()}
+            </div>
+
+            {/* Language Toggle */}
+            <button
+              onClick={() => setCurrentLanguage(currentLanguage === 'EN' ? 'TH' : 'EN')}
+              className="px-2 py-1 text-sm font-medium text-text-secondary bg-secondary-50 rounded border border-secondary-200 hover:bg-secondary-100 nav-transition"
+            >
+              {currentLanguage}
+            </button>
+
+            {/* Profile Menu */}
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-medium text-sm hover:bg-primary-600 nav-transition"
+              >
+                A
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-lg shadow-elevated py-2 z-50">
+                  <div className="px-4 py-2 border-b border-border">
+                    <div className="font-medium text-text-primary">Agent User</div>
+                    <div className="text-sm text-text-secondary">agent@fazwaz.com</div>
+                  </div>
+                  
+                  {profileMenuItems.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        item.action();
+                        setIsProfileOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-secondary-50 nav-transition flex items-center space-x-2"
+                    >
+                      <Icon name={item.icon} size={16} />
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary nav-transition"
+            >
+              <Icon name={isMobileMenuOpen ? "X" : "Menu"} size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden border-t border-border py-4">
+            <nav className="space-y-2">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => {
+                    navigate(item.path);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full ${getItemClasses(item)} justify-start`}
+                >
+                  <Icon name={item.icon} size={16} />
+                  <span>{item.label}</span>
+                  {renderNotificationBadge(item)}
+                </button>
+              ))}
+            </nav>
+            
+            {/* Mobile Automation Status */}
+            <div className="mt-4 pt-4 border-t border-border">
+              {renderAutomationStatusIndicator()}
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 };

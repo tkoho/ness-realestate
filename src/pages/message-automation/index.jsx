@@ -28,15 +28,15 @@ const MessageAutomation = () => {
             <div className="mt-4 sm:mt-0 flex items-center space-x-4">
               <div className="text-right">
                 <div className="text-sm text-text-secondary">Automation Status</div>
-                <div className="text-lg font-semibold text-success">
-                  Running
+                <div className="text-lg font-semibold text-secondary">
+                  Not Configured
                 </div>
               </div>
-              <div className="w-3 h-3 bg-success rounded-full animate-pulse"></div>
+              <div className="w-3 h-3 bg-secondary-300 rounded-full"></div>
             </div>
           </div>
 
-          {/* Quick Stats */}
+          {/* Quick Stats - Empty State */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-primary-50 rounded-lg border border-primary-200 p-6">
               <div className="flex items-center justify-between mb-4">
@@ -44,10 +44,10 @@ const MessageAutomation = () => {
                   <Icon name="Users" size={24} color="white" />
                 </div>
                 <span className="text-xs font-medium text-primary bg-primary-100 px-2 py-1 rounded-full">
-                  Active
+                  Ready
                 </span>
               </div>
-              <div className="text-2xl font-bold text-primary mb-1">315</div>
+              <div className="text-2xl font-bold text-primary mb-1">0</div>
               <p className="text-sm text-primary-600">Leads in Sequences</p>
             </div>
 
@@ -60,7 +60,7 @@ const MessageAutomation = () => {
                   Today
                 </span>
               </div>
-              <div className="text-2xl font-bold text-accent mb-1">69</div>
+              <div className="text-2xl font-bold text-accent mb-1">0</div>
               <p className="text-sm text-accent-600">Messages Sent</p>
             </div>
 
@@ -70,10 +70,10 @@ const MessageAutomation = () => {
                   <Icon name="TrendingUp" size={24} color="white" />
                 </div>
                 <span className="text-xs font-medium text-success bg-success-100 px-2 py-1 rounded-full">
-                  Average
+                  Target
                 </span>
               </div>
-              <div className="text-2xl font-bold text-success mb-1">42%</div>
+              <div className="text-2xl font-bold text-success mb-1">--%</div>
               <p className="text-sm text-success-600">Response Rate</p>
             </div>
 
@@ -83,10 +83,10 @@ const MessageAutomation = () => {
                   <Icon name="AlertTriangle" size={24} color="white" />
                 </div>
                 <span className="text-xs font-medium text-warning bg-warning-100 px-2 py-1 rounded-full">
-                  Issues
+                  Status
                 </span>
               </div>
-              <div className="text-2xl font-bold text-warning mb-1">2</div>
+              <div className="text-2xl font-bold text-warning mb-1">0</div>
               <p className="text-sm text-warning-600">Errors Today</p>
             </div>
           </div>
@@ -125,19 +125,19 @@ const MessageAutomation = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Daily Send Limit</span>
-                  <span className="font-medium text-text-primary">130 messages</span>
+                  <span className="font-medium text-text-primary">Not set</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Active Sequences</span>
-                  <span className="font-medium text-text-primary">4 running</span>
+                  <span className="font-medium text-text-primary">0 configured</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Next Execution</span>
-                  <span className="font-medium text-text-primary">15 minutes</span>
+                  <span className="font-medium text-text-primary">Not scheduled</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Rate Limit Status</span>
-                  <span className="font-medium text-success">Healthy</span>
+                  <span className="font-medium text-secondary">Not configured</span>
                 </div>
               </div>
             </div>
@@ -150,19 +150,19 @@ const MessageAutomation = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Best Performing</span>
-                  <span className="font-medium text-success">Day 7 Email (68%)</span>
+                  <span className="font-medium text-secondary">No data yet</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Needs Attention</span>
-                  <span className="font-medium text-warning">Day 14 Email (15%)</span>
+                  <span className="font-medium text-secondary">No sequences</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Conversion Rate</span>
-                  <span className="font-medium text-text-primary">25%</span>
+                  <span className="font-medium text-text-primary">--%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Avg. Response Time</span>
-                  <span className="font-medium text-text-primary">4.2 hours</span>
+                  <span className="font-medium text-text-primary">No data</span>
                 </div>
               </div>
             </div>
